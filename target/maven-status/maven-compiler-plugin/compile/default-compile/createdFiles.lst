@@ -1,5 +1,0 @@
-sg/edu/ntu/taskflow_api/model/Task.class
-sg/edu/ntu/taskflow_api/service/TaskService.class
-sg/edu/ntu/taskflow_api/repository/TaskRepository.class
-sg/edu/ntu/taskflow_api/controller/TaskController.class
-sg/edu/ntu/taskflow_api/TaskflowApiApplication.class
