@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>TaskFlow</h1>
+      <p class="subtitle">Tasks from the deployed API &middot; <a id="api-base" href="https://taskflow-api-mod4.onrender.com/api/tasks" target="_blank" rel="noopener">taskflow-api-mod4.onrender.com</a></p>
+    </header>
+
+    <section class="add-task">
+      <input id="new-title" type="text" placeholder="Add a new task…" autocomplete="off" />
+      <button id="add-btn">Add</button>
+    </section>
+
+    <section>
+      <ul id="task-list" class="task-list"></ul>
+      <p id="empty" class="empty">No tasks yet — add one above.</p>
+      <p id="error" class="error" hidden></p>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

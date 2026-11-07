@@ -5,60 +5,74 @@ In-memory task store with `GET`/`POST` endpoints.
 
 ## Live deployment
 
-- **Platform:** Render (free tier, Existing Image path)
+- **Platform:** Render (Web Service, free tier)
 - **URL:** https://taskflow-api-mod4.onrender.com
-- **Image:** `docker.io/mikeyapyc/taskflow:latest` (Docker Hub, public)
-- **Environment variables:** `PORT=8080` (Render routes to `PORT`); `OPENAI_API_KEY` optional (only needed for AI endpoints)
-- **Note:** free instances sleep after ~15 min idle; first request after a sleep may take up to ~60 s.
+- **Image:** `mikeyapyc/taskflow:latest` on Docker Hub
 
-### Screenshots
+| | |
+|---|---|
+| `GET /api/tasks` | List all tasks |
+| `POST /api/tasks` | Create a task `{"title":"...", "completed":false}` |
 
-Render dashboard (service **Live**):
+> Free Render instances sleep after ~15 min idle — the first request after a
+> pause can take ~60 s while it cold-starts.
+
+### Deployment screenshots
+
+Render dashboard showing the service **Live**:
 
 ![Render dashboard](screenshots/dashboard.png)
 
-Live API response — `GET https://taskflow-api-mod4.onrender.com/api/tasks`:
+Live `GET /api/tasks` response from the deployed service:
 
-![Application running](screenshots/application.png)
+![Live API response](screenshots/application.png)
 
-## Endpoints
-
-| Method | Path         | Description                          |
-|--------|--------------|--------------------------------------|
-| GET    | `/api/tasks` | List all tasks                       |
-| POST   | `/api/tasks` | Create a task `{"title":"...","completed":false}` |
-
-### Examples
+## Local run
 
 ```bash
-curl https://taskflow-api-mod4.onrender.com/api/tasks
-
-curl -X POST https://taskflow-api-mod4.onrender.com/api/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Test","completed":false}'
+mvn spring-boot:run
+# or: mvn package && java -jar target/*.jar
 ```
 
-## Local development (Docker)
+## Build & test
 
 ```bash
-docker build -t taskflow:latest .
-docker run -p 8080:8080 taskflow:latest
-# wait for "Started TaskflowApiApplication", then:
-curl http://localhost:8080/api/tasks
+mvn clean verify
 ```
 
-Requirements: Java 21 (Temurin), Maven 3.9.
+## Docker
 
-## Deployment steps (how this was built)
+```bash
+docker build -t taskflow .
+docker run -p 8080:8080 taskflow
+```
 
-1. Cleaned repo: untracked `target/`, `HELP.md`, `*Zone.Identifier`; proper `.gitignore`.
-2. Multi-stage `Dockerfile`: build with `maven:3.9-eclipse-temurin-21`, run on `eclipse-temurin:21-jre-alpine`, `EXPOSE 8080`.
-3. Built and smoke-tested locally (`GET`/`POST /api/tasks` OK).
-4. Pushed image to Docker Hub: `docker buildx build --platform linux/amd64 -t mikeyapyc/taskflow:latest --push .`
-5. Created Render Web Service from **Existing Image** `docker.io/mikeyapyc/taskflow:latest`, set `PORT=8080`, service went **Live**.
+## Stretch goals (optional)
 
-## Tech stack
+### Option 1: CI pipeline (GitHub Actions)
 
-- Java 21, Spring Boot 4.1.1 (Web + Spring AI)
-- In-memory `ConcurrentHashMap` task store
-- Maven build
+A GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push to
+`main`: builds the project, runs the tests (`mvn clean verify`), then builds the
+Docker image and pushes it to Docker Hub as both `mikeyapyc/taskflow:latest`
+and a commit-SHA tag. Docker Hub credentials are stored as repository
+**secrets** (`DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`) — never in code.
+
+- Workflow: https://github.com/Mikey-ai3355/taskflow-api-mod4/actions/workflows/ci.yml
+- Image on Docker Hub: https://hub.docker.com/r/mikeyapyc/taskflow
+- Successful run: <LINK TO A GREEN RUN>
+
+This gives two pipelines side by side: CI publishing to Docker Hub, and the
+Render web service deploying from that image.
+
+### Option 2: Frontend on Netlify
+
+A static frontend (`frontend/`) lists the tasks, adds new ones, and
+toggles/deletes them by calling the deployed API. It is deployed to Netlify.
+
+- Netlify URL: <YOUR-NETLIFY-URL>
+- The browser blocks cross-origin requests from the Netlify domain, so the API
+  enables CORS for `/api/**` in
+  `src/main/java/sg/edu/ntu/taskflow_api/config/CorsConfig.java`.
+  For this assignment all origins are allowed; in production restrict it to the
+  Netlify site.
+- Screenshot of the frontend showing data from the API: `screenshots/frontend.png`
